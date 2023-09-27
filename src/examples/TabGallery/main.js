@@ -1,10 +1,10 @@
-import { render, addEvent, state } from '../../rathole'
+import { render, addEvent, state, componentSize } from '../../rathole'
 import './format.css'
 
 export default function TabGallery(app) {
-    /**Components */
-
     const defaultImg = 'https://www.w3schools.com/howto/img_nature.jpg'
+
+    /**Components */
 
     const Row = `
 <div class="row">
@@ -20,38 +20,42 @@ export default function TabGallery(app) {
 </div>
 `
 
-    const PhotoContainer = (img = defaultImg) =>
+    const PhotoContainer = ({ img, close }) =>
         `
 <div class="photo_container">
   <span id="close"class="closebtn">&times;</span>
-  <img id="expandedImg" src="${img}">
+  <img id="expandedImg" src="${img ? img : defaultImg}" style="display:${
+      close ? 'none' : 'block'
+  }">
   <div id="imgtext"></div>
 </div>
     `
 
-    const container = (img) => `
+    const container = (e) => `
   <div class="gallery_container">
     ${Row}
-    ${PhotoContainer(img)}
+    ${PhotoContainer(e)}
   </div>`
 
     /** Subcribe componets & events */
     state.subscribe((e) => {
-        const { img } = e
-        renderDOM([container(img)], app)
+        const { img, close } = e
+        renderDOM([container({ img, close })], app)
     })
 
+    state.setState({ img: defaultImg, close: false })
+
     function changeImg(e) {
-        console.log(e)
-        const { img } = state.data
-        state.setState({ img: e.srcElement.currentSrc })
+        state.setState({ img: e.srcElement.currentSrc, close: false })
     }
 
     function close() {
-        document.querySelector('.photo_container').style.display = 'none'
+        state.setState({ close: true })
     }
 
     function renderDOM(compo, el) {
+        /**size */
+        console.log(componentSize(compo))
         /**Renders */
         render(compo, el)
         /**Events */
@@ -61,5 +65,5 @@ export default function TabGallery(app) {
         addEvent('close', 'click', close)
     }
 
-    renderDOM([container()], app)
+    renderDOM([container(state.data)], app)
 }
