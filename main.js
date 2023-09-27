@@ -1,13 +1,8 @@
-import * as rathold from './src/rathole'
-import './css/pico.min.css';
-import './css/style.css';
+//import * as rathold from './src/rathole'
+import './css/pico.min.css'
+import './css/style.css'
+import TabGallery from './src/examples/TabGallery/main'
 
-// import javascriptLogo from './javascript.svg'
-// import viteLogo from '/vite.svg'
-// import { setupCounter } from './counter.js'
-console.log(rathold)
-document.querySelector('#app').innerHTML = `
-  <div>
-  Esto es un test
-  </div>
-`;
+//console.log(rathold)
+
+const example1 = new TabGallery('render-state')
