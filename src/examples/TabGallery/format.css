@@ -21,13 +21,16 @@
 
 .gallery_container {
     /* margin: 0 auto; */
-    max-width: 400px;
+    /* max-width: 400px; */
 }
 
 /* The expanding image container (positioning is needed to position the close button and the text) */
 .photo_container {
     position: relative;
     /* display: none; */
+}
+.photo_container > img {
+    width: 100%;
 }
 
 /* Expanding image text */
@@ -43,7 +46,8 @@
 .closebtn {
     position: absolute;
     top: 0;
-    left: 90%;
+    /* left: 90%; */
+    right: 5%;
     color: white;
     font-size: 35px;
     cursor: pointer;

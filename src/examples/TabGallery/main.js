@@ -23,7 +23,9 @@ export default function TabGallery(app) {
     const PhotoContainer = ({ img, close }) =>
         `
 <div class="photo_container">
-  <span id="close"class="closebtn">&times;</span>
+  <span id="close"class="closebtn" style="display:${
+      close ? 'none' : 'block'
+  }">&times;</span>
   <img id="expandedImg" src="${img ? img : defaultImg}" style="display:${
       close ? 'none' : 'block'
   }">
@@ -43,7 +45,7 @@ export default function TabGallery(app) {
         renderDOM([container({ img, close })], app)
     })
 
-    state.setState({ img: defaultImg, close: false })
+    state.setState({ img: defaultImg, close: true })
 
     function changeImg(e) {
         state.setState({ img: e.srcElement.currentSrc, close: false })

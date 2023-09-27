@@ -1,0 +1,24 @@
+[
+    {
+        "name": "Jane Doe",
+        "photo": "https://www.w3schools.com/w3images/team1.jpg",
+        "title": "CEO &amp; Founder",
+        "description": "Some text that describes me lorem ipsum ipsum lorem.",
+        "contact": "jane@example.com"
+    },
+    {
+        "name": "Mike Ross",
+        "photo": "https://www.w3schools.com/w3images/team2.jpg",
+        "title": "Desingner",
+        "description": "Some text that describes me lorem ipsum ipsum lorem.",
+        "contact": "mike@example.com"
+    },
+    {
+        "name": "John Doe",
+        "photo": "https://www.w3schools.com/w3images/team3.jpg",
+        "title": "Art Director",
+        "description": "Some text that describes me lorem ipsum ipsum lorem.",
+        "contact": "john@example.com"
+    }
+    
+]
