@@ -1,3 +1,4 @@
+@import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css);
 /* Three columns side by side */
 .column_meet {
     float: left;
@@ -60,12 +61,35 @@
     display: inline-block;
     padding: 8px;
     color: white;
-    background-color: #000;
+    background-color: #145;
     text-align: center;
     cursor: pointer;
     width: 100%;
+    font-size: small;
 }
 
 .button_meet:hover {
     background-color: #555;
+}
+
+/* Social */
+
+.footer-social-icons {
+}
+
+.footer-social-icons ul {
+    width: 100%;
+    padding: 0;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+
+.footer-social-icons li {
+    list-style: none;
+    margin: 0 10px 0 10px;
+}
+
+.social-icons > li > a {
+    color: #1a6781;
 }
