@@ -1,5 +1,6 @@
 [
     {
+        "id": 0,
         "name": "Jane Doe",
         "photo": "https://www.w3schools.com/w3images/team1.jpg",
         "title": "CEO &amp; Founder",
@@ -7,6 +8,7 @@
         "contact": "jane@example.com"
     },
     {
+        "id": 1,
         "name": "Mike Ross",
         "photo": "https://www.w3schools.com/w3images/team2.jpg",
         "title": "Desingner",
@@ -14,11 +16,11 @@
         "contact": "mike@example.com"
     },
     {
+        "id": 2,
         "name": "John Doe",
         "photo": "https://www.w3schools.com/w3images/team3.jpg",
         "title": "Art Director",
         "description": "Some text that describes",
         "contact": "john@example.com"
     }
-    
 ]

@@ -75,6 +75,7 @@
 /* Social */
 
 .footer-social-icons {
+    display: none;
 }
 
 .footer-social-icons ul {
