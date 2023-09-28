@@ -5,9 +5,8 @@ export default function MeetTeam(app) {
     /**Stores */
     const socialState = stores.createStore('socialStore')
     stores.subscribe('socialStore', (data) => {
-        console.log('cambios en socialStore:', data)
+        console.log('onChange socialStore:', data)
     })
-    //stores.updateStore ('socialStore', {viewIcons: false});
 
     //Url base de llamada de datos
     data.baseUrl = ''

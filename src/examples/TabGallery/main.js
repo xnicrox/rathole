@@ -41,6 +41,7 @@ export default function TabGallery(app) {
 
     /** Subcribe componets & events */
     state.subscribe((e) => {
+        console.log('onChange TabGallery:', e)
         const { img, close } = e
         renderDOM([container({ img, close })], app)
     })

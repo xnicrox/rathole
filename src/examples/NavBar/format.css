@@ -1,0 +1,13 @@
+.navbar {
+    border: solid 1px #c4c4c4;
+    padding: 0 10px 0 10px;
+    border-radius: 5px;
+}
+
+.navbar ul > li {
+    font-size: 0.8rem;
+}
+
+.navbar ul > li > a {
+    font-size: 0.8rem;
+}
