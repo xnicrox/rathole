@@ -22,7 +22,14 @@ Micro framework reactivo
 
 dist/rathole.js  3.92 kB │ gzip:  1.70 kB
 
+## Demo
+
+- <https://rathole.vercel.app/>
+
 ## Install
+
+`npm i`
+`npm run dev`
 
 ## Referencias
 
