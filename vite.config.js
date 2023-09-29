@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import HtmlCompress from './plugins/HtmlCompress'
 
 export default defineConfig({
     publicDir: true,
@@ -10,4 +11,5 @@ export default defineConfig({
             },
         },
     },
+    plugins: [new HtmlCompress()],
 })
