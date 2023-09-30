@@ -60,8 +60,9 @@ export default function MeetTeam(app) {
      </div>
      `
 
-    const LoadData = `<div class="pre_colum_meet">...</div>`
-    const ButtonCard = `<button id="load-card">Load cards</button>`
+    const LoadData = `<div class="pre_colum_meet">Company cards</div>`
+    const ButtonCard = `<button id="load-card">Load employees</button>`
+    const ButtonClose = `<button id="close-card">Close cards</button>`
 
     /**Mostrar contacto */
     function getSocial(e) {
@@ -71,17 +72,17 @@ export default function MeetTeam(app) {
         const name = {}
         name[id] = getStore[id] ? false : true
         stores.updateStore('socialStore', name)
-        renderDOM([PageLayout(dataList), ButtonCard], app, dataList, id)
+        renderDOM([PageLayout(dataList), ButtonClose], app, dataList, id)
     }
 
     /**Render & events */
     function renderDOM(...compo) {
         //Renders
         render(...compo)
-        addEvent('load-card', 'click', fetchData)
 
         //Si llega el "dataList", generamos eventos y guardamos en los stores,para controlar las cards
         if (compo[2] !== undefined) {
+            addEvent('close-card', 'click', () => reset())
             const getStore = stores.getStore('socialStore')
             const objNames = {}
             compo[2].map((list) => {
@@ -90,7 +91,9 @@ export default function MeetTeam(app) {
                 addEvent(list.id, 'click', getSocial)
             })
             stores.updateStore('socialStore', objNames)
+            return
         }
+        addEvent('load-card', 'click', fetchData)
     }
 
     /**Llamada a los datos */
@@ -98,9 +101,13 @@ export default function MeetTeam(app) {
         console.log('LoadData...')
         dataList = await data.get('team.json')
 
-        renderDOM([PageLayout(dataList), ButtonCard], app, dataList)
+        renderDOM([PageLayout(dataList), ButtonClose], app, dataList)
     }
 
     /*Renderizamos elementos base */
-    renderDOM([LoadData, ButtonCard], app)
+    function reset() {
+        renderDOM([LoadData, ButtonCard], app)
+    }
+
+    reset()
 }

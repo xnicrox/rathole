@@ -21,3 +21,25 @@ h4 {
 .logo {
     font-family: 'Special Elite', cursive;
 }
+
+.grid-performance {
+    max-width: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 0.6rem;
+
+    border: solid 1px #d8d8d8;
+    padding: 5px;
+}
+
+.grid-performance div {
+    font-size: 0.8rem;
+    text-align: left;
+    font-weight: 500;
+}
+
+@media (max-width: 400px) {
+    .grid-performance {
+        grid-template-columns: 1fr;
+    }
+}
