@@ -7,15 +7,20 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest --coverage",
+    "cy:open": "cypress open",
+    "cy:test": "cypress run",
     "prepare": "husky install",
     "lint": "prettier --check .",
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "vite": "^4.4.5",
+    "cypress": "^13.3.0",
     "dotenv": "^16.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "vite": "^4.4.5",
+    "vitest": "^0.34.6"
   }
 }
