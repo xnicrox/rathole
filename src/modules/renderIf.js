@@ -1,15 +1,13 @@
 import render from './render'
-/* Función para renderizar componentes condicionalmente */
+
 const renderIf = (condition, component, targetId) => {
-    if (condition) {
-        render([component], targetId)
-    } else {
-        const targetElement = document.getElementById(targetId)
-        if (targetElement) {
-            targetElement.innerHTML = ''
-        } else {
-            console.error(`Element with id '${targetId}' not found.`)
-        }
-    }
+    const targetElement = document.getElementById(targetId)
+
+    !condition
+        ? targetElement
+            ? (targetElement.innerHTML = '')
+            : console.error(`Element with id '${targetId}' not found.`)
+        : render([component], targetId)
 }
+
 export default renderIf
