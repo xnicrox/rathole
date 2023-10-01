@@ -7,9 +7,12 @@ import './css/style.css'
 import TabGallery from './src/examples/TabGallery/main'
 import MeetTeam from './src/examples/MeetTeam/main'
 import NavBar from './src/examples/NavBar/main'
+import VideoGallery from './src/examples/VideoGallery/main'
 
 const example1 = new TabGallery('tab-gallery')
 
 const example2 = new MeetTeam('meet-team')
 
 const example3 = new NavBar('nav-bar')
+
+const example4 = new VideoGallery('video-gallery')
