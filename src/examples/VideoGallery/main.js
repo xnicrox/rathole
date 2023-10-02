@@ -1,4 +1,4 @@
-import { render, addEvent, stores, renderIf } from '../../rathole'
+import { render, addEvent, stores, virtualDOMx } from '../../rathole'
 import './format.css'
 
 export default function VideoGallery(app) {
@@ -31,7 +31,7 @@ export default function VideoGallery(app) {
 
     const Gallery = () => {
         return `
-    <div class="container_video_card">
+    <div id="container_v_card" class="container_video_card">
     ${videoCard({
         id: 'video1',
         cover: 'img_5terre.jpg',
@@ -59,11 +59,14 @@ export default function VideoGallery(app) {
         const video = {}
         video[this.id] = true
         stores.updateStore('videoStore', video)
-        RenderDOM()
+        RenderDOM(this.id)
     }
 
-    function RenderDOM() {
-        render([Gallery()], app)
+    function RenderDOM(id) {
+        //render([Gallery()], app)
+        virtualDOMx.render(Gallery(), id)
+        virtualDOMx.commit()
+
         addEvent('video1', 'click', playVideo)
         addEvent('video2', 'click', playVideo)
         addEvent('video3', 'click', playVideo)
@@ -77,5 +80,7 @@ export default function VideoGallery(app) {
         video3: false,
     })
 
-    RenderDOM()
+    render([Gallery()], app)
+
+    RenderDOM('container_v_card')
 }

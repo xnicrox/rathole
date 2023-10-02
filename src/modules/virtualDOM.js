@@ -2,15 +2,18 @@
 const virtualDOM = {
     // Representación del árbol de elementos virtuales
     virtualTree: null,
+    appTree: null,
+
     // Renderiza un componente en el Virtual DOM
-    render(component) {
-        // Aquí, en lugar de realizar manipulaciones directas del DOM, actualizamos el árbol virtual
+    render(component, app) {
+        // Actualizamos el árbol virtual
         this.virtualTree = component
+        this.appTree = app
     },
 
     // Actualiza el DOM real a partir del árbol virtual usando el algoritmo de diferencias mínimas
     commit() {
-        const currentDOM = document.body
+        const currentDOM = document.querySelector(this.appTree)
         const newDOM = this.virtualTree
 
         // Llamamos a la función diff para comparar los árboles
@@ -24,42 +27,7 @@ const virtualDOM = {
     diff(currentDOM, newDOM) {
         const patches = []
 
-        // Caso base: Si los nodos son diferentes, reemplazar todo el subárbol
-        if (!currentNode.isEqualNode(newNode)) {
-            patches.push({ type: 'REPLACE', node: newNode })
-        } else {
-            // Comparar los hijos de los nodos
-            const currentChildren = currentNode.childNodes
-            const newChildren = newNode.childNodes
-
-            // Asegurarse de que haya hijos para comparar
-            if (currentChildren.length > 0 || newChildren.length > 0) {
-                for (
-                    let i = 0;
-                    i < Math.max(currentChildren.length, newChildren.length);
-                    i++
-                ) {
-                    const currentChild = currentChildren[i]
-                    const newChild = newChildren[i]
-
-                    if (currentChild && newChild) {
-                        // Si ambos nodos existen, compararlos recursivamente
-                        const childPatches = diff(currentChild, newChild)
-                        patches.push({
-                            type: 'NODE',
-                            index: i,
-                            patches: childPatches,
-                        })
-                    } else if (currentChild) {
-                        // Si solo existe el nodo actual, eliminar el nodo actual
-                        patches.push({ type: 'REMOVE', index: i })
-                    } else if (newChild) {
-                        // Si solo existe el nuevo nodo, agregar el nuevo nodo
-                        patches.push({ type: 'ADD', node: newChild })
-                    }
-                }
-            }
-        }
+        // Implementa el algoritmo de diferencias mínimas aquí
 
         return patches
     },
@@ -71,7 +39,7 @@ const virtualDOM = {
                 node.parentNode.replaceChild(newNode.cloneNode(true), node),
             // Aplicar "parches" a los hijos del nodo actual
             NODE: ({ node, index, patches }) =>
-                patch(node.childNodes[index], patches),
+                this.patch(node.childNodes[index], patches),
             // Eliminar el nodo actual
             REMOVE: ({ node, index }) =>
                 node.removeChild(node.childNodes[index]),
@@ -81,7 +49,12 @@ const virtualDOM = {
         }
 
         patches.forEach(({ type, node: newNode, index, patches }) => {
-            patchActions[type]?.({ node, newNode, index, patches })
+            const action = patchActions[type]
+            if (action) {
+                action({ node: currentNode, newNode, index, patches })
+                return
+            }
+            console.error(`Tipo de parche no reconocido: ${type}`)
         })
     },
 }
