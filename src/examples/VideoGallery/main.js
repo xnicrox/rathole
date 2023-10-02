@@ -1,4 +1,4 @@
-import { render, addEvent, stores } from '../../rathole'
+import { render, addEvent, stores, renderIf } from '../../rathole'
 import './format.css'
 
 export default function VideoGallery(app) {
@@ -8,41 +8,47 @@ export default function VideoGallery(app) {
         console.log('onChange videoStore:', data)
     })
 
-    const urlBase = 'https://www.w3schools.com/howto/'
+    const urlBaseImg = 'https://www.w3schools.com/howto/'
 
-    const videoCard = ({ id, img, description }) => `
+    const imagesCompo = (cover) => `<img src="${urlBaseImg + cover}" alt="">`
+    const videoCompo = (file) =>
+        `<video src="${file}" controls preload="auto" autoplay playinsline>;`
+
+    const videoCard = ({ id, cover, video, description }) => {
+        const choose = stores.getStore('videoStore')[id]
+
+        return `
     <div class="responsive" >
     <div class="gallery">
       <button id=${id}>
-        <img src="${urlBase + img}" alt="Cinque Terre">
+      ${choose ? videoCompo(video) : imagesCompo(cover)}
       </button>
       <div class="desc">${description}</div>
     </div>
   </div>
     `
+    }
 
     const Gallery = () => {
         return `
     <div class="container_video_card">
     ${videoCard({
         id: 'video1',
-        img: 'img_5terre.jpg',
+        cover: 'img_5terre.jpg',
+        video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
         description: 'video1',
     })}
     ${videoCard({
         id: 'video2',
-        img: 'img_forest.jpg',
+        cover: 'img_forest.jpg',
+        video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
         description: 'video2',
     })}
     ${videoCard({
         id: 'video3',
-        img: 'img_lights.jpg',
+        cover: 'img_lights.jpg',
+        video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
         description: 'video3',
-    })}
-    ${videoCard({
-        id: 'video4',
-        img: 'img_mountains.jpg',
-        description: 'video4',
     })}
         <div class="clearfix"></div>
     </div>
@@ -52,7 +58,8 @@ export default function VideoGallery(app) {
     function playVideo() {
         const video = {}
         video[this.id] = true
-        stores.updateStore('videoStore', video);
+        stores.updateStore('videoStore', video)
+        RenderDOM()
     }
 
     function RenderDOM() {
@@ -60,7 +67,6 @@ export default function VideoGallery(app) {
         addEvent('video1', 'click', playVideo)
         addEvent('video2', 'click', playVideo)
         addEvent('video3', 'click', playVideo)
-        addEvent('video4', 'click', playVideo)
     }
 
     /**Set states */
@@ -69,7 +75,6 @@ export default function VideoGallery(app) {
         video1: false,
         video2: false,
         video3: false,
-        video4: false,
     })
 
     RenderDOM()
