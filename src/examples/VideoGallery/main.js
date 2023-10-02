@@ -1,50 +1,76 @@
-import { render, addEvent, stores} from '../../rathole'
+import { render, addEvent, stores } from '../../rathole'
 import './format.css'
 
 export default function VideoGallery(app) {
+    /**Stores */
+    const socialState = stores.createStore('videoStore')
+    stores.subscribe('videoStore', (data) => {
+        console.log('onChange videoStore:', data)
+    })
 
-    const urlBase='https://www.w3schools.com/howto/';
-    const Gallery=`
-    <div class="responsive">
-  <div class="gallery">
-    <a target="_blank" href="${urlBase}img_5terre.jpg">
-      <img src="${urlBase}img_5terre.jpg" alt="Cinque Terre">
-    </a>
-    <div class="desc">Add a description of the image here</div>
+    const urlBase = 'https://www.w3schools.com/howto/'
+
+    const videoCard = ({ id, img, description }) => `
+    <div class="responsive" >
+    <div class="gallery">
+      <button id=${id}>
+        <img src="${urlBase + img}" alt="Cinque Terre">
+      </button>
+      <div class="desc">${description}</div>
+    </div>
   </div>
-</div>
-
-<div class="responsive">
-  <div class="gallery">
-    <a target="_blank" href="${urlBase}img_forest.jpg">
-      <img src="${urlBase}img_forest.jpg" alt="Forest">
-    </a>
-    <div class="desc">Add a description of the image here</div>
-  </div>
-</div>
-
-<div class="responsive">
-  <div class="gallery">
-    <a target="_blank" href="${urlBase}img_lights.jpg">
-      <img src="${urlBase}img_lights.jpg" alt="Northern Lights">
-    </a>
-    <div class="desc">Add a description of the image here</div>
-  </div>
-</div>
-
-<div class="responsive">
-  <div class="gallery">
-    <a target="_blank" href="${urlBase}img_mountains.jpg">
-      <img src="${urlBase}img_mountains.jpg" alt="Mountains">
-    </a>
-    <div class="desc">Add a description of the image here</div>
-  </div>
-</div>
-
-<div class="clearfix"></div>
     `
 
-    render([Gallery],app)
+    const Gallery = () => {
+        return `
+    <div class="container_video_card">
+    ${videoCard({
+        id: 'video1',
+        img: 'img_5terre.jpg',
+        description: 'video1',
+    })}
+    ${videoCard({
+        id: 'video2',
+        img: 'img_forest.jpg',
+        description: 'video2',
+    })}
+    ${videoCard({
+        id: 'video3',
+        img: 'img_lights.jpg',
+        description: 'video3',
+    })}
+    ${videoCard({
+        id: 'video4',
+        img: 'img_mountains.jpg',
+        description: 'video4',
+    })}
+        <div class="clearfix"></div>
+    </div>
+        `
+    }
 
+    function playVideo() {
+        const video = {}
+        video[this.id] = true
+        stores.updateStore('videoStore', video);
+    }
 
+    function RenderDOM() {
+        render([Gallery()], app)
+        addEvent('video1', 'click', playVideo)
+        addEvent('video2', 'click', playVideo)
+        addEvent('video3', 'click', playVideo)
+        addEvent('video4', 'click', playVideo)
+    }
+
+    /**Set states */
+
+    stores.updateStore('videoStore', {
+        video1: false,
+        video2: false,
+        video3: false,
+        video4: false,
+    })
+
+    RenderDOM()
 }
