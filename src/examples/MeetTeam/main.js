@@ -1,7 +1,17 @@
-import { render, data, addEvent, stores } from '../../rathole'
+import { virtualDOM, render, data, addEvent, stores } from '../../rathole'
 import './format.css'
 
-export default function MeetTeam(app) {
+export default function MeetTeam(appSelector) {
+    // Obtener el elemento DOM del contenedor usando el selector
+    const app = document.querySelector(appSelector)
+
+    if (!app) {
+        console.error(
+            `No se encontró el elemento con el selector: ${appSelector}`
+        )
+        return
+    }
+
     /**Stores */
     const socialState = stores.createStore('socialStore')
     stores.subscribe('socialStore', (data) => {
@@ -76,24 +86,36 @@ export default function MeetTeam(app) {
     }
 
     /**Render & events */
-    function renderDOM(...compo) {
+    function renderDOM(compo, el) {
         //Renders
-        render(...compo)
+        //render(...compo)
 
-        //Si llega el "dataList", generamos eventos y guardamos en los stores,para controlar las cards
-        if (compo[2] !== undefined) {
-            addEvent('close-card', 'click', () => reset())
-            const getStore = stores.getStore('socialStore')
-            const objNames = {}
-            compo[2].map((list) => {
-                const id = `viewIcons_${list.id}`
-                objNames[id] = getStore[id] ? getStore[id] : false
-                addEvent(list.id, 'click', getSocial)
-            })
-            stores.updateStore('socialStore', objNames)
-            return
+        // Proceso de renderizado
+        const htmlString = compo.join('') // Unir los componentes en una cadena HTML
+
+        try {
+            // Actualizar el DOM virtual y aplicar cambios
+            virtualDOM.setVirtualTree(htmlString, el)
+            virtualDOM.commit()
+
+            // Agregar los event listeners
+            //Si llega el "dataList", generamos eventos y guardamos en los stores,para controlar las cards
+            if (compo[2] !== undefined) {
+                addEvent('close-card', 'click', () => reset())
+                const getStore = stores.getStore('socialStore')
+                const objNames = {}
+                compo[2].map((list) => {
+                    const id = `viewIcons_${list.id}`
+                    objNames[id] = getStore[id] ? getStore[id] : false
+                    addEvent(list.id, 'click', getSocial)
+                })
+                stores.updateStore('socialStore', objNames)
+                return
+            }
+            addEvent('load-card', 'click', fetchData)
+        } catch (error) {
+            console.error('Error en renderDOM:', error)
         }
-        addEvent('load-card', 'click', fetchData)
     }
 
     /**Llamada a los datos */
