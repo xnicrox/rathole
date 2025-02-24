@@ -78,20 +78,46 @@ const virtualDOM = {
             return patches
         }
 
-        // Si los nodos son diferentes, reemplazar
-        if (currentNode.outerHTML !== newNode.outerHTML) {
-            patches.push({
-                type: 'REPLACE',
-                oldNode: currentNode,
-                newNode: newNode,
-            })
+        // Comparar atributos
+        const currentAttrs = currentNode.attributes
+        const newAttrs = newNode.attributes
+
+        // Verificar atributos modificados o nuevos
+        for (const attr of newAttrs) {
+            const currentAttrValue = currentNode.getAttribute(attr.name)
+            if (currentAttrValue !== attr.value) {
+                patches.push({
+                    type: 'ATTR',
+                    name: attr.name,
+                    value: attr.value,
+                })
+            }
+        }
+
+        // Verificar atributos eliminados
+        for (const attr of currentAttrs) {
+            if (!newNode.hasAttribute(attr.name)) {
+                patches.push({
+                    type: 'REMOVE_ATTR',
+                    name: attr.name,
+                })
+            }
+        }
+
+        // Comparar contenido de texto si no tienen hijos
+        if (!currentNode.children.length && !newNode.children.length) {
+            if (currentNode.textContent !== newNode.textContent) {
+                patches.push({
+                    type: 'TEXT',
+                    value: newNode.textContent,
+                })
+            }
             return patches
         }
 
         // Comparar hijos
         const currentChildren = Array.from(currentNode.children)
         const newChildren = Array.from(newNode.children)
-
         const maxLength = Math.max(currentChildren.length, newChildren.length)
 
         for (let i = 0; i < maxLength; i++) {
@@ -107,6 +133,21 @@ const virtualDOM = {
     patch(node, patches) {
         patches.forEach((patch) => {
             switch (patch.type) {
+                case 'ATTR':
+                    if (node) {
+                        node.setAttribute(patch.name, patch.value)
+                    }
+                    break
+                case 'REMOVE_ATTR':
+                    if (node) {
+                        node.removeAttribute(patch.name)
+                    }
+                    break
+                case 'TEXT':
+                    if (node) {
+                        node.textContent = patch.value
+                    }
+                    break
                 case 'REPLACE':
                     if (node && node.parentNode) {
                         node.parentNode.replaceChild(

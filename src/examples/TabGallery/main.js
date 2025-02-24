@@ -1,14 +1,8 @@
-import {
-    virtualDOM,
-    render,
-    addEvent,
-    state,
-    componentSize,
-} from '../../rathole'
+import { virtualDOM, addEvent, state, componentSize } from '../../rathole'
 import './format.css'
 
 export default function TabGallery(appSelector) {
-    // Convertir el selector en un elemento DOM
+    // Obtener el elemento DOM del contenedor usando el selector
     const app = document.querySelector(appSelector)
 
     if (!app) {
@@ -18,10 +12,12 @@ export default function TabGallery(appSelector) {
         return
     }
 
+    // Imagen por defecto para la galería
     const defaultImg = 'https://www.w3schools.com/howto/img_nature.jpg'
 
-    /**Components */
+    /**Componentes de la galería */
 
+    // Componente que contiene la fila de imágenes en miniatura
     const Row = `
 <div class="row">
   <div class="column">
@@ -36,6 +32,7 @@ export default function TabGallery(appSelector) {
 </div>
 `
 
+    // Componente que muestra la imagen expandida
     const PhotoContainer = ({ img, close }) =>
         `
 <div class="photo_container">
@@ -49,47 +46,53 @@ export default function TabGallery(appSelector) {
 </div>
     `
 
+    // Componente principal que contiene toda la galería
     const container = (e) => `
   <div class="gallery_container">
     ${Row}
     ${PhotoContainer(e)}
   </div>`
 
-    /** Subcribe componets & events */
+    /** Suscripción a cambios de estado y eventos */
     state.subscribe((e) => {
         console.log('onChange TabGallery:', e)
         const { img, close } = e
         renderDOM([container({ img, close })], app)
     })
 
+    // Establecer estado inicial
     state.setState({ img: defaultImg, close: true })
 
+    // Manejador para cambiar la imagen expandida
     function changeImg(e) {
         state.setState({ img: e.srcElement.currentSrc, close: false })
     }
 
+    // Manejador para cerrar la imagen expandida
     function close() {
         state.setState({ close: true })
     }
 
+    // Función para renderizar el DOM virtual
     function renderDOM(compo, el) {
-        // Validar que el es un elemento DOM válido
+        // Validar que el contenedor es un elemento DOM válido
         if (!(el instanceof Element)) {
             console.error('El contenedor no es un elemento DOM válido:', el)
             return
         }
 
-        /**size */
+        // Mostrar el tamaño del componente (para debugging)
         console.log(componentSize(compo))
 
-        /**Renders */
-        const htmlString = compo.join('') // Une los componentes en un string
+        // Proceso de renderizado
+        const htmlString = compo.join('') // Unir los componentes en una cadena HTML
 
         try {
-            virtualDOM.setVirtualTree(htmlString, el) // Pasamos el elemento contenedor
-            virtualDOM.commit() // Aplica los cambios
+            // Actualizar el DOM virtual y aplicar cambios
+            virtualDOM.setVirtualTree(htmlString, el)
+            virtualDOM.commit()
 
-            /**Events */
+            // Agregar los event listeners
             addEvent('Nature', 'click', changeImg)
             addEvent('Snow', 'click', changeImg)
             addEvent('Mountains', 'click', changeImg)
@@ -99,5 +102,6 @@ export default function TabGallery(appSelector) {
         }
     }
 
+    // Renderizado inicial de la galería
     renderDOM([container(state.data)], app)
 }
