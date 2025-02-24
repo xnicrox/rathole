@@ -1,69 +1,98 @@
 /* Objeto para el Virtual DOM */
 const virtualDOM = {
-  // Actualiza el DOM real a partir del árbol virtual usando el algoritmo de diferencias mínimas
-  commit() {
-    const currentDOM = document.body;
-    const newDOM = this.virtualTree;
+    virtualTree: null,
 
-    // Llamamos a la función diff para comparar los árboles
-    const patches = this.diff(currentDOM, newDOM);
-
-    // Aplicamos los cambios al DOM real
-    this.patch(currentDOM, patches);
-  },
-
-  /* Función para calcular las diferencias entre dos árboles DOM */
-  diff(currentDOM, newDOM) {
-    const patches = [];
-
-    // Caso base: Si los nodos son diferentes, reemplazar todo el subárbol
-    if (!currentNode.isEqualNode(newNode)) {
-      patches.push({ type: 'REPLACE', node: newNode });
-    } else {
-      // Comparar los hijos de los nodos
-      const currentChildren = currentNode.childNodes;
-      const newChildren = newNode.childNodes;
-
-      // Asegurarse de que haya hijos para comparar
-      if (currentChildren.length > 0 || newChildren.length > 0) {
-        for (let i = 0; i < Math.max(currentChildren.length, newChildren.length); i++) {
-          const currentChild = currentChildren[i];
-          const newChild = newChildren[i];
-
-          if (currentChild && newChild) {
-            // Si ambos nodos existen, compararlos recursivamente
-            const childPatches = diff(currentChild, newChild);
-            patches.push({ type: 'NODE', index: i, patches: childPatches });
-          } else if (currentChild) {
-            // Si solo existe el nodo actual, eliminar el nodo actual
-            patches.push({ type: 'REMOVE', index: i });
-          } else if (newChild) {
-            // Si solo existe el nuevo nodo, agregar el nuevo nodo
-            patches.push({ type: 'ADD', node: newChild });
-          }
+    // Método para establecer el árbol virtual
+    setVirtualTree(tree) {
+        if (typeof tree === 'string') {
+            const template = document.createElement('template')
+            template.innerHTML = tree.trim()
+            this.virtualTree = template.content
+        } else {
+            this.virtualTree = tree
         }
-      }
-    }
+    },
 
-    return patches;
-  },
+    // Actualiza el DOM real a partir del árbol virtual usando el algoritmo de diferencias mínimas
+    commit() {
+        if (!this.virtualTree) {
+            console.warn('No virtual tree set')
+            return
+        }
 
-  patch(currentNode, patches) {
-    const patchActions = {
-      // Reemplazar el nodo actual con el nuevo nodo
-      REPLACE: ({ node, newNode }) => node.parentNode.replaceChild(newNode.cloneNode(true), node),
-      // Aplicar "parches" a los hijos del nodo actual
-      NODE: ({ node, index, patches }) => patch(node.childNodes[index], patches),
-      // Eliminar el nodo actual
-      REMOVE: ({ node, index }) => node.removeChild(node.childNodes[index]),
-      // Agregar el nuevo nodo al nodo actual
-      ADD: ({ node, newNode }) => node.appendChild(newNode.cloneNode(true)),
-    };
+        const currentDOM = document.body
+        const newDOM = this.virtualTree
 
-    patches.forEach(({ type, node: newNode, index, patches }) => {
-      patchActions[type]?.({ node, newNode, index, patches });
-    });
-  },
-};
+        // Llamamos a la función diff para comparar los árboles
+        const patches = this.diff(currentDOM, newDOM)
 
-export default virtualDOM;
+        // Aplicamos los cambios al DOM real
+        this.patch(currentDOM, patches)
+    },
+
+    /* Función para calcular las diferencias entre dos árboles DOM */
+    diff(currentNode, newNode) {
+        const patches = []
+
+        // Si no hay nuevo nodo, marcar para eliminar
+        if (!newNode) {
+            patches.push({ type: 'REMOVE', node: currentNode })
+            return patches
+        }
+
+        // Si no hay nodo actual pero hay nuevo, marcar para agregar
+        if (!currentNode) {
+            patches.push({ type: 'ADD', node: newNode })
+            return patches
+        }
+
+        // Si los nodos son diferentes, reemplazar
+        if (!currentNode.isEqualNode(newNode)) {
+            patches.push({
+                type: 'REPLACE',
+                oldNode: currentNode,
+                newNode: newNode,
+            })
+            return patches
+        }
+
+        // Comparar hijos
+        const currentChildren = Array.from(currentNode.childNodes)
+        const newChildren = Array.from(newNode.childNodes)
+
+        const maxLength = Math.max(currentChildren.length, newChildren.length)
+
+        for (let i = 0; i < maxLength; i++) {
+            const childPatches = this.diff(currentChildren[i], newChildren[i])
+            if (childPatches.length > 0) {
+                patches.push({ type: 'NODE', index: i, patches: childPatches })
+            }
+        }
+
+        return patches
+    },
+
+    patch(node, patches) {
+        patches.forEach((patch) => {
+            switch (patch.type) {
+                case 'REPLACE':
+                    node.parentNode.replaceChild(
+                        patch.newNode.cloneNode(true),
+                        patch.oldNode
+                    )
+                    break
+                case 'ADD':
+                    node.appendChild(patch.node.cloneNode(true))
+                    break
+                case 'REMOVE':
+                    patch.node.parentNode.removeChild(patch.node)
+                    break
+                case 'NODE':
+                    this.patch(node.childNodes[patch.index], patch.patches)
+                    break
+            }
+        })
+    },
+}
+
+export default virtualDOM

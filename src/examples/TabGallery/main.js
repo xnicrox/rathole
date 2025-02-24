@@ -1,4 +1,10 @@
-import { render, addEvent, state, componentSize } from '../../rathole'
+import {
+    virtualDOM,
+    render,
+    addEvent,
+    state,
+    componentSize,
+} from '../../rathole'
 import './format.css'
 
 export default function TabGallery(app) {
@@ -59,8 +65,12 @@ export default function TabGallery(app) {
     function renderDOM(compo, el) {
         /**size */
         console.log(componentSize(compo))
+
         /**Renders */
-        render(compo, el)
+        const htmlString = compo.join('') // Une los componentes en un string
+        virtualDOM.setVirtualTree(htmlString) // Establece el árbol virtual
+        virtualDOM.commit() // Aplica los cambios
+
         /**Events */
         addEvent('Nature', 'click', changeImg)
         addEvent('Snow', 'click', changeImg)
