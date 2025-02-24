@@ -36,20 +36,22 @@ const virtualDOM = {
         }
 
         try {
-            if (!this.container.firstElementChild) {
-                // Si el contenedor está vacío, simplemente insertamos el nuevo árbol
+            // Si el contenedor está vacío o el contenido es diferente, reemplazar todo
+            if (
+                !this.container.firstElementChild ||
+                this.container.firstElementChild.outerHTML !==
+                    this.virtualTree.outerHTML
+            ) {
+                this.container.innerHTML = ''
                 this.container.appendChild(this.virtualTree.cloneNode(true))
                 return
             }
 
-            // Comparamos con el primer elemento hijo del contenedor
+            // Si hay contenido, comparar y actualizar
             const currentDOM = this.container.firstElementChild
             const newDOM = this.virtualTree
 
-            // Llamamos a la función diff para comparar los árboles
             const patches = this.diff(currentDOM, newDOM)
-
-            // Aplicamos los cambios al DOM real
             this.patch(currentDOM, patches)
         } catch (error) {
             console.error('Error in virtualDOM commit:', error)

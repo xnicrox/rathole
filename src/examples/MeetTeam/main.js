@@ -1,4 +1,4 @@
-import { virtualDOM, render, data, addEvent, stores } from '../../rathole'
+import { virtualDOM, data, addEvent, stores } from '../../rathole'
 import './format.css'
 
 export default function MeetTeam(appSelector) {
@@ -16,6 +16,10 @@ export default function MeetTeam(appSelector) {
     const socialState = stores.createStore('socialStore')
     stores.subscribe('socialStore', (data) => {
         console.log('onChange socialStore:', data)
+        // Actualizar la vista cuando cambie el estado
+        if (dataList) {
+            renderDOM([PageLayout(dataList), ButtonClose], app, dataList)
+        }
     })
 
     //Url base de llamada de datos
@@ -70,65 +74,96 @@ export default function MeetTeam(appSelector) {
      </div>
      `
 
-    const LoadData = `<div class="pre_colum_meet">Company cards</div>`
-    const ButtonCard = `<button id="load-card">Load employees</button>`
-    const ButtonClose = `<button id="close-card">Close cards</button>`
+    // Modificar los componentes para que tengan una estructura consistente
+    const LoadData = `
+    <div class="meet-team-content">
+        <div class="pre_colum_meet">Company cards</div>
+        <button id="load-card" class="button_meet">Load employees</button>
+    </div>`
 
-    /**Mostrar contacto */
-    function getSocial(e) {
-        console.log('boton:', e.srcElement.id)
-        const id = `viewIcons_${e.srcElement.id}`
-        const getStore = stores.getStore('socialStore')
-        const name = {}
-        name[id] = getStore[id] ? false : true
-        stores.updateStore('socialStore', name)
-        renderDOM([PageLayout(dataList), ButtonClose], app, dataList, id)
-    }
+    const ButtonClose = `
+    <div class="meet-team-content">
+        <button id="close-card" class="button_meet">Close cards</button>
+    </div>`
 
     /**Render & events */
     function renderDOM(compo, el) {
-        //Renders
-        //render(...compo)
-
         // Proceso de renderizado
-        const htmlString = compo.join('') // Unir los componentes en una cadena HTML
+        const htmlString = `
+        <div class="meet-team-container">
+            ${Array.isArray(compo) ? compo.join('') : compo}
+        </div>`
 
         try {
             // Actualizar el DOM virtual y aplicar cambios
             virtualDOM.setVirtualTree(htmlString, el)
             virtualDOM.commit()
 
-            // Agregar los event listeners
-            //Si llega el "dataList", generamos eventos y guardamos en los stores,para controlar las cards
-            if (compo[2] !== undefined) {
-                addEvent('close-card', 'click', () => reset())
+            // Agregar los event listeners según el caso
+            if (compo[1] !== undefined) {
+                // Si tenemos datos, agregar eventos para las cards
+                if (document.getElementById('close-card')) {
+                    addEvent('close-card', 'click', () => {
+                        console.log('Cerrando cards...')
+                        reset()
+                    })
+                }
+
                 const getStore = stores.getStore('socialStore')
                 const objNames = {}
-                compo[2].map((list) => {
+                compo[0].forEach((list) => {
                     const id = `viewIcons_${list.id}`
                     objNames[id] = getStore[id] ? getStore[id] : false
-                    addEvent(list.id, 'click', getSocial)
+
+                    if (document.getElementById(list.id)) {
+                        addEvent(list.id, 'click', getSocial)
+                    }
                 })
                 stores.updateStore('socialStore', objNames)
-                return
+            } else {
+                // Si no hay datos, agregar evento para cargar
+                if (document.getElementById('load-card')) {
+                    addEvent('load-card', 'click', fetchData)
+                }
             }
-            addEvent('load-card', 'click', fetchData)
         } catch (error) {
             console.error('Error en renderDOM:', error)
         }
     }
 
-    /**Llamada a los datos */
-    async function fetchData() {
-        console.log('LoadData...')
-        dataList = await data.get('team.json')
+    /**Mostrar contacto */
+    function getSocial(e) {
+        e.preventDefault()
+        console.log('boton:', e.target.id)
+        const id = `viewIcons_${e.target.id}`
+        const getStore = stores.getStore('socialStore')
+        const name = {}
+        name[id] = !getStore[id]
+        stores.updateStore('socialStore', name)
+    }
 
-        renderDOM([PageLayout(dataList), ButtonClose], app, dataList)
+    /**Llamada a los datos */
+    async function fetchData(e) {
+        e.preventDefault()
+        console.log('LoadData...')
+        try {
+            dataList = await data.get('team.json')
+            if (dataList) {
+                renderDOM([PageLayout(dataList), ButtonClose], app, dataList)
+            }
+        } catch (error) {
+            console.error('Error cargando datos:', error)
+        }
     }
 
     /*Renderizamos elementos base */
     function reset() {
-        renderDOM([LoadData, ButtonCard], app)
+        console.log('Reseteando estado...')
+        // Limpiar el estado
+        dataList = null
+        stores.updateStore('socialStore', {})
+        // Volver al estado inicial
+        renderDOM([LoadData], app)
     }
 
     reset()
