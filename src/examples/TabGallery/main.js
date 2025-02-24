@@ -7,7 +7,17 @@ import {
 } from '../../rathole'
 import './format.css'
 
-export default function TabGallery(app) {
+export default function TabGallery(appSelector) {
+    // Convertir el selector en un elemento DOM
+    const app = document.querySelector(appSelector)
+
+    if (!app) {
+        console.error(
+            `No se encontró el elemento con el selector: ${appSelector}`
+        )
+        return
+    }
+
     const defaultImg = 'https://www.w3schools.com/howto/img_nature.jpg'
 
     /**Components */
@@ -63,19 +73,30 @@ export default function TabGallery(app) {
     }
 
     function renderDOM(compo, el) {
+        // Validar que el es un elemento DOM válido
+        if (!(el instanceof Element)) {
+            console.error('El contenedor no es un elemento DOM válido:', el)
+            return
+        }
+
         /**size */
         console.log(componentSize(compo))
 
         /**Renders */
         const htmlString = compo.join('') // Une los componentes en un string
-        virtualDOM.setVirtualTree(htmlString) // Establece el árbol virtual
-        virtualDOM.commit() // Aplica los cambios
 
-        /**Events */
-        addEvent('Nature', 'click', changeImg)
-        addEvent('Snow', 'click', changeImg)
-        addEvent('Mountains', 'click', changeImg)
-        addEvent('close', 'click', close)
+        try {
+            virtualDOM.setVirtualTree(htmlString, el) // Pasamos el elemento contenedor
+            virtualDOM.commit() // Aplica los cambios
+
+            /**Events */
+            addEvent('Nature', 'click', changeImg)
+            addEvent('Snow', 'click', changeImg)
+            addEvent('Mountains', 'click', changeImg)
+            addEvent('close', 'click', close)
+        } catch (error) {
+            console.error('Error en renderDOM:', error)
+        }
     }
 
     renderDOM([container(state.data)], app)
