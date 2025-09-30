@@ -14,11 +14,11 @@ export default function MeetTeam(appSelector) {
 
     /**Stores */
     const socialState = stores.createStore('socialStore')
-    stores.subscribe('socialStore', (data) => {
-        console.log('onChange socialStore:', data)
-        // Actualizar la vista cuando cambie el estado
+    stores.subscribe('socialStore', (storeData) => {
+        console.log('onChange socialStore:', storeData)
+        // Actualizar la vista cuando cambie el estado (sin inicializar el store de nuevo)
         if (dataList) {
-            renderDOM([PageLayout(dataList), ButtonClose], app, dataList)
+            renderDOM([PageLayout(dataList), ButtonClose], app, dataList, false)
         }
     })
 
@@ -87,7 +87,7 @@ export default function MeetTeam(appSelector) {
     </div>`
 
     /**Render & events */
-    function renderDOM(compo, el) {
+    function renderDOM(compo, el, data = null, initStore = false) {
         // Proceso de renderizado
         const htmlString = `
         <div class="meet-team-container">
@@ -100,7 +100,7 @@ export default function MeetTeam(appSelector) {
             virtualDOM.commit()
 
             // Agregar los event listeners según el caso
-            if (compo[1] !== undefined) {
+            if (data && Array.isArray(data)) {
                 // Si tenemos datos, agregar eventos para las cards
                 if (document.getElementById('close-card')) {
                     addEvent('close-card', 'click', () => {
@@ -109,17 +109,25 @@ export default function MeetTeam(appSelector) {
                     })
                 }
 
-                const getStore = stores.getStore('socialStore')
-                const objNames = {}
-                compo[0].forEach((list) => {
-                    const id = `viewIcons_${list.id}`
-                    objNames[id] = getStore[id] ? getStore[id] : false
+                // Solo inicializar el store la primera vez
+                if (initStore) {
+                    const getStore = stores.getStore('socialStore')
+                    const objNames = {}
 
-                    if (document.getElementById(list.id)) {
-                        addEvent(list.id, 'click', getSocial)
+                    // Iterar sobre los datos reales
+                    data.forEach((item) => {
+                        const id = `viewIcons_${item.id}`
+                        objNames[id] = getStore[id] ? getStore[id] : false
+                    })
+                    stores.updateStore('socialStore', objNames)
+                }
+
+                // Agregar eventos a los botones
+                data.forEach((item) => {
+                    if (document.getElementById(item.id)) {
+                        addEvent(item.id, 'click', getSocial)
                     }
                 })
-                stores.updateStore('socialStore', objNames)
             } else {
                 // Si no hay datos, agregar evento para cargar
                 if (document.getElementById('load-card')) {
@@ -149,7 +157,13 @@ export default function MeetTeam(appSelector) {
         try {
             dataList = await data.get('team.json')
             if (dataList) {
-                renderDOM([PageLayout(dataList), ButtonClose], app, dataList)
+                // Pasar dataList y true para inicializar el store
+                renderDOM(
+                    [PageLayout(dataList), ButtonClose],
+                    app,
+                    dataList,
+                    true
+                )
             }
         } catch (error) {
             console.error('Error cargando datos:', error)

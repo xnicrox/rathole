@@ -36,23 +36,20 @@ const virtualDOM = {
         }
 
         try {
-            // Si el contenedor está vacío o el contenido es diferente, reemplazar todo
-            if (
-                !this.container.firstElementChild ||
-                this.container.firstElementChild.outerHTML !==
-                    this.virtualTree.outerHTML
-            ) {
-                this.container.innerHTML = ''
+            // Si el contenedor está vacío, insertar el nuevo árbol
+            if (!this.container.firstElementChild) {
                 this.container.appendChild(this.virtualTree.cloneNode(true))
                 return
             }
 
-            // Si hay contenido, comparar y actualizar
+            // Si hay contenido, comparar y actualizar con el algoritmo de diff
             const currentDOM = this.container.firstElementChild
             const newDOM = this.virtualTree
 
             const patches = this.diff(currentDOM, newDOM)
-            this.patch(currentDOM, patches)
+            if (patches.length > 0) {
+                this.patch(currentDOM, patches)
+            }
         } catch (error) {
             console.error('Error in virtualDOM commit:', error)
         }
@@ -77,6 +74,16 @@ const virtualDOM = {
             !(currentNode instanceof Element) ||
             !(newNode instanceof Element)
         ) {
+            return patches
+        }
+
+        // Si los nodos son de diferente tipo, reemplazar completamente
+        if (currentNode.tagName !== newNode.tagName) {
+            patches.push({
+                type: 'REPLACE',
+                oldNode: currentNode,
+                newNode: newNode,
+            })
             return patches
         }
 
@@ -123,9 +130,29 @@ const virtualDOM = {
         const maxLength = Math.max(currentChildren.length, newChildren.length)
 
         for (let i = 0; i < maxLength; i++) {
-            const childPatches = this.diff(currentChildren[i], newChildren[i])
-            if (childPatches.length > 0) {
-                patches.push({ type: 'NODE', index: i, patches: childPatches })
+            if (!currentChildren[i] && newChildren[i]) {
+                // Hijo nuevo
+                patches.push({
+                    type: 'ADD_CHILD',
+                    index: i,
+                    node: newChildren[i],
+                })
+            } else if (currentChildren[i] && !newChildren[i]) {
+                // Hijo eliminado
+                patches.push({ type: 'REMOVE_CHILD', index: i })
+            } else {
+                // Comparar hijos existentes
+                const childPatches = this.diff(
+                    currentChildren[i],
+                    newChildren[i]
+                )
+                if (childPatches.length > 0) {
+                    patches.push({
+                        type: 'NODE',
+                        index: i,
+                        patches: childPatches,
+                    })
+                }
             }
         }
 
@@ -154,7 +181,7 @@ const virtualDOM = {
                     if (node && node.parentNode) {
                         node.parentNode.replaceChild(
                             patch.newNode.cloneNode(true),
-                            patch.oldNode
+                            node
                         )
                     }
                     break
@@ -163,9 +190,19 @@ const virtualDOM = {
                         node.appendChild(patch.node.cloneNode(true))
                     }
                     break
+                case 'ADD_CHILD':
+                    if (node) {
+                        node.appendChild(patch.node.cloneNode(true))
+                    }
+                    break
                 case 'REMOVE':
                     if (patch.node && patch.node.parentNode) {
                         patch.node.parentNode.removeChild(patch.node)
+                    }
+                    break
+                case 'REMOVE_CHILD':
+                    if (node && node.children[patch.index]) {
+                        node.removeChild(node.children[patch.index])
                     }
                     break
                 case 'NODE':
