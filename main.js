@@ -12,4 +12,4 @@ const example1 = new TabGallery('#tab-gallery')
 
 const example2 = new MeetTeam('#meet-team')
 
-// const example3 = new NavBar('nav-bar')
+const example3 = new NavBar('#nav-bar')

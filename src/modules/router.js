@@ -4,6 +4,8 @@ const router = {
 
     addRoute: (path, component) => router.routes.set(path, component),
 
+    getRoute: (path) => router.routes.get(path),
+
     navigate: (path, callback) => {
         const routeComponent = router.routes.get(path)
         routeComponent

@@ -1,7 +1,17 @@
-import { render, state, router, addEvent } from '../../rathole'
+import { virtualDOM, state, router, addEvent } from '../../rathole'
 import './format.css'
 
-export default function NavBar(app) {
+export default function NavBar(appSelector) {
+    // Obtener el elemento DOM del contenedor usando el selector
+    const app = document.querySelector(appSelector)
+
+    if (!app) {
+        console.error(
+            `No se encontró el elemento con el selector: ${appSelector}`
+        )
+        return
+    }
+
     /**Recuperamo página sino dejamos la que está por defecto */
     const defaultPage =
         window.location.hash.slice(1) !== ''
@@ -11,9 +21,10 @@ export default function NavBar(app) {
     /**Estado de la app */
     state.subscribe((data) => {
         console.log('onChange navBar:', data)
+        const currentRoute = window.location.hash.slice(1) || defaultPage
+        const content = router.getRoute(currentRoute) || router.getRoute('home')
+        renderDOM(content)
     })
-
-    state.setState({ link: defaultPage })
 
     /**Componets */
 
@@ -54,19 +65,54 @@ export default function NavBar(app) {
         state.setState({ link: e.srcElement.id })
     }
 
-    /**Pasamos calback la funcion de render */
-    function renderDOM(el) {
-        render([BarNav(), el], app)
+    /**Función de renderizado con virtualDOM */
+    function renderDOM(content) {
+        // Validar que el contenedor es un elemento DOM válido
+        if (!(app instanceof Element)) {
+            console.error('El contenedor no es un elemento DOM válido:', app)
+            return
+        }
 
-        addEvent('home', 'click', changeBar)
-        addEvent('about', 'click', changeBar)
-        addEvent('contact', 'click', changeBar)
+        // Proceso de renderizado - agregar contenedor wrapper
+        const htmlString = `
+        <div class="navbar-wrapper">
+            ${BarNav()}
+            <div class="content">
+                ${content}
+            </div>
+        </div>`
+
+        try {
+            // Actualizar el DOM virtual y aplicar cambios
+            virtualDOM.setVirtualTree(htmlString, app)
+            virtualDOM.commit()
+
+            // Agregar los event listeners
+            if (document.getElementById('home')) {
+                addEvent('home', 'click', changeBar)
+            }
+            if (document.getElementById('about')) {
+                addEvent('about', 'click', changeBar)
+            }
+            if (document.getElementById('contact')) {
+                addEvent('contact', 'click', changeBar)
+            }
+        } catch (error) {
+            console.error('Error en renderDOM:', error)
+        }
     }
 
     window.addEventListener('hashchange', () => {
         const currentRoute = window.location.hash.slice(1)
-        router.navigate(currentRoute, renderDOM)
+        const content = router.getRoute(currentRoute) || router.getRoute('home')
+        renderDOM(content)
     })
 
-    router.navigate(defaultPage, renderDOM)
+    // Establecer estado inicial
+    state.setState({ link: defaultPage })
+
+    // Renderizado inicial
+    const initialContent =
+        router.getRoute(defaultPage) || router.getRoute('home')
+    renderDOM(initialContent)
 }
