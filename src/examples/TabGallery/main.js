@@ -60,9 +60,6 @@ export default function TabGallery(appSelector) {
         renderDOM([container({ img, close })], app)
     })
 
-    // Establecer estado inicial
-    state.setState({ img: defaultImg, close: true })
-
     // Manejador para cambiar la imagen expandida
     function changeImg(e) {
         state.setState({ img: e.srcElement.currentSrc, close: false })
@@ -84,8 +81,11 @@ export default function TabGallery(appSelector) {
         // Mostrar el tamaño del componente (para debugging)
         console.log(componentSize(compo))
 
-        // Proceso de renderizado
-        const htmlString = compo.join('') // Unir los componentes en una cadena HTML
+        // Proceso de renderizado - agregar contenedor wrapper
+        const htmlString = `
+        <div class="tab-gallery-wrapper">
+            ${compo.join('')}
+        </div>`
 
         try {
             // Actualizar el DOM virtual y aplicar cambios
@@ -93,14 +93,25 @@ export default function TabGallery(appSelector) {
             virtualDOM.commit()
 
             // Agregar los event listeners
-            addEvent('Nature', 'click', changeImg)
-            addEvent('Snow', 'click', changeImg)
-            addEvent('Mountains', 'click', changeImg)
-            addEvent('close', 'click', close)
+            if (document.getElementById('Nature')) {
+                addEvent('Nature', 'click', changeImg)
+            }
+            if (document.getElementById('Snow')) {
+                addEvent('Snow', 'click', changeImg)
+            }
+            if (document.getElementById('Mountains')) {
+                addEvent('Mountains', 'click', changeImg)
+            }
+            if (document.getElementById('close')) {
+                addEvent('close', 'click', close)
+            }
         } catch (error) {
             console.error('Error en renderDOM:', error)
         }
     }
+
+    // Establecer estado inicial
+    state.setState({ img: defaultImg, close: true })
 
     // Renderizado inicial de la galería
     renderDOM([container(state.data)], app)
