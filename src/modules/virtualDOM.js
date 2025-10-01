@@ -1,144 +1,131 @@
 const virtualDOM = {
-    virtualTree: null,
-    container: null,
+    virtualTree: null, // Árbol virtual en memoria
+    container: null, // Contenedor DOM donde se renderiza
 
+    /**
+     * Establece el árbol virtual y el contenedor DOM
+     * @param {string|Element} tree - HTML string o elemento DOM
+     * @param {Element} container - Elemento contenedor del DOM real
+     */
     setVirtualTree(tree, container) {
         if (!(container instanceof Element))
             return console.error('Container must be a valid DOM element')
         this.container = container
         if (typeof tree === 'string') {
-            const template = document.createElement('template')
-            template.innerHTML = tree.trim()
-            this.virtualTree = template.content.firstElementChild
-        } else {
-            this.virtualTree = tree
-        }
+            const t = document.createElement('template')
+            t.innerHTML = tree.trim()
+            this.virtualTree = t.content.firstElementChild
+        } else this.virtualTree = tree
     },
 
+    /**
+     * Aplica los cambios del árbol virtual al DOM real
+     * Compara el DOM actual con el virtual y aplica solo las diferencias
+     */
     commit() {
         if (!this.virtualTree || !(this.container instanceof Element)) return
         try {
-            if (!this.container.firstElementChild) {
-                this.container.appendChild(this.virtualTree.cloneNode(true))
-                return
-            }
+            // Si el contenedor está vacío, insertar el árbol completo
+            if (!this.container.firstElementChild)
+                return this.container.appendChild(
+                    this.virtualTree.cloneNode(true)
+                )
+            // Calcular diferencias y aplicar parches
             const patches = this.diff(
                 this.container.firstElementChild,
                 this.virtualTree
             )
-            if (patches.length > 0)
+            if (patches.length)
                 this.patch(this.container.firstElementChild, patches)
-        } catch (error) {
-            console.error('Error in virtualDOM commit:', error)
+        } catch (e) {
+            console.error('Error in virtualDOM commit:', e)
         }
     },
 
-    diff(currentNode, newNode) {
-        const patches = []
-        if (!currentNode && newNode) return [{ type: 'ADD', node: newNode }]
-        if (currentNode && !newNode)
-            return [{ type: 'REMOVE', node: currentNode }]
-        if (
-            !currentNode ||
-            !newNode ||
-            !(currentNode instanceof Element) ||
-            !(newNode instanceof Element)
-        )
-            return patches
-        if (currentNode.tagName !== newNode.tagName)
-            return [{ type: 'REPLACE', oldNode: currentNode, newNode }]
+    /**
+     * Algoritmo de diff para comparar dos árboles DOM
+     * @param {Element} c - Nodo actual (current)
+     * @param {Element} n - Nodo nuevo (new)
+     * @returns {Array} Lista de parches a aplicar
+     */
+    diff(c, n) {
+        const p = []
+        // Casos base: nodos agregados o eliminados
+        if (!c && n) return [{ type: 'ADD', node: n }]
+        if (c && !n) return [{ type: 'REMOVE', node: c }]
+        if (!c || !n || !(c instanceof Element) || !(n instanceof Element))
+            return p
+        // Si el tipo de nodo cambió, reemplazar completo
+        if (c.tagName !== n.tagName)
+            return [{ type: 'REPLACE', oldNode: c, newNode: n }]
 
-        // Comparar atributos
-        for (const attr of newNode.attributes) {
-            if (currentNode.getAttribute(attr.name) !== attr.value) {
-                patches.push({
-                    type: 'ATTR',
-                    name: attr.name,
-                    value: attr.value,
-                })
-            }
-        }
-        for (const attr of currentNode.attributes) {
-            if (!newNode.hasAttribute(attr.name)) {
-                patches.push({ type: 'REMOVE_ATTR', name: attr.name })
-            }
-        }
+        // Comparar atributos modificados o nuevos
+        for (const a of n.attributes)
+            if (c.getAttribute(a.name) !== a.value)
+                p.push({ type: 'ATTR', name: a.name, value: a.value })
+        // Detectar atributos eliminados
+        for (const a of c.attributes)
+            if (!n.hasAttribute(a.name))
+                p.push({ type: 'REMOVE_ATTR', name: a.name })
 
-        // Comparar texto si no tienen hijos
-        if (!currentNode.children.length && !newNode.children.length) {
-            if (currentNode.textContent !== newNode.textContent) {
-                patches.push({ type: 'TEXT', value: newNode.textContent })
-            }
-            return patches
+        // Si no tienen hijos, comparar solo el texto
+        if (!c.children.length && !n.children.length) {
+            if (c.textContent !== n.textContent)
+                p.push({ type: 'TEXT', value: n.textContent })
+            return p
         }
 
-        // Comparar hijos
-        const currentChildren = Array.from(currentNode.children)
-        const newChildren = Array.from(newNode.children)
-        const maxLength = Math.max(currentChildren.length, newChildren.length)
-
-        for (let i = 0; i < maxLength; i++) {
-            if (!currentChildren[i] && newChildren[i]) {
-                patches.push({
-                    type: 'ADD_CHILD',
-                    index: i,
-                    node: newChildren[i],
-                })
-            } else if (currentChildren[i] && !newChildren[i]) {
-                patches.push({ type: 'REMOVE_CHILD', index: i })
-            } else {
-                const childPatches = this.diff(
-                    currentChildren[i],
-                    newChildren[i]
-                )
-                if (childPatches.length > 0) {
-                    patches.push({
-                        type: 'NODE',
-                        index: i,
-                        patches: childPatches,
-                    })
-                }
+        // Comparar hijos recursivamente
+        const cc = Array.from(c.children),
+            nc = Array.from(n.children),
+            max = Math.max(cc.length, nc.length)
+        for (let i = 0; i < max; i++) {
+            if (!cc[i] && nc[i])
+                p.push({ type: 'ADD_CHILD', index: i, node: nc[i] })
+            else if (cc[i] && !nc[i]) p.push({ type: 'REMOVE_CHILD', index: i })
+            else {
+                const cp = this.diff(cc[i], nc[i])
+                if (cp.length) p.push({ type: 'NODE', index: i, patches: cp })
             }
         }
-        return patches
+        return p
     },
 
+    /**
+     * Aplica los parches al DOM real
+     * @param {Element} node - Nodo DOM a modificar
+     * @param {Array} patches - Lista de parches a aplicar
+     */
     patch(node, patches) {
-        patches.forEach((patch) => {
+        patches.forEach((p) => {
             if (!node) return
-            switch (patch.type) {
-                case 'ATTR':
-                    node.setAttribute(patch.name, patch.value)
-                    break
-                case 'REMOVE_ATTR':
-                    node.removeAttribute(patch.name)
-                    break
-                case 'TEXT':
-                    node.textContent = patch.value
-                    break
-                case 'REPLACE':
-                    if (node.parentNode)
-                        node.parentNode.replaceChild(
-                            patch.newNode.cloneNode(true),
-                            node
-                        )
-                    break
+            switch (p.type) {
+                case 'ATTR': // Actualizar atributo
+                    return node.setAttribute(p.name, p.value)
+                case 'REMOVE_ATTR': // Eliminar atributo
+                    return node.removeAttribute(p.name)
+                case 'TEXT': // Actualizar texto
+                    return (node.textContent = p.value)
+                case 'REPLACE': // Reemplazar nodo completo
+                    return node.parentNode?.replaceChild(
+                        p.newNode.cloneNode(true),
+                        node
+                    )
                 case 'ADD':
-                case 'ADD_CHILD':
-                    node.appendChild(patch.node.cloneNode(true))
-                    break
-                case 'REMOVE':
-                    if (patch.node?.parentNode)
-                        patch.node.parentNode.removeChild(patch.node)
-                    break
-                case 'REMOVE_CHILD':
-                    if (node.children[patch.index])
-                        node.removeChild(node.children[patch.index])
-                    break
-                case 'NODE':
-                    if (node.children)
-                        this.patch(node.children[patch.index], patch.patches)
-                    break
+                case 'ADD_CHILD': // Agregar hijo
+                    return node.appendChild(p.node.cloneNode(true))
+                case 'REMOVE': // Eliminar nodo
+                    return p.node?.parentNode?.removeChild(p.node)
+                case 'REMOVE_CHILD': // Eliminar hijo
+                    return (
+                        node.children[p.index] &&
+                        node.removeChild(node.children[p.index])
+                    )
+                case 'NODE': // Aplicar parches a hijo recursivamente
+                    return (
+                        node.children &&
+                        this.patch(node.children[p.index], p.patches)
+                    )
             }
         })
     },
