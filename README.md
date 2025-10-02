@@ -5,7 +5,7 @@ Micro framework reactivo con Virtual DOM
 ## Features
 
 | Modulo            | Funcionalidad                   | Descripción                                                          |
-|-------------------|---------------------------------|----------------------------------------------------------------------|
+| ----------------- | ------------------------------- | -------------------------------------------------------------------- |
 | **state**         | Reactividad                     | Actualizar componentes cuando cambia el estado o los datos.          |
 | **virtualDOM**    | Virtual DOM                     | Sistema de diff granular que actualiza solo los elementos cambiados. |
 | **render**        | Creación de Componentes         | Crear componentes personalizados para la aplicación.                 |
@@ -22,11 +22,11 @@ Micro framework reactivo con Virtual DOM
 
 El módulo `virtualDOM` implementa un algoritmo de diff eficiente que:
 
-- ✅ **Actualiza solo lo necesario**: Compara atributos, texto y estructura del DOM
-- ✅ **Mantiene event listeners**: No reemplaza nodos innecesariamente
-- ✅ **Detecta cambios estructurales**: Reemplaza nodos cuando cambia el tipo de elemento
-- ✅ **Maneja hijos dinámicos**: Agrega, elimina y actualiza elementos hijo eficientemente
-- ✅ **Evita bucles infinitos**: Sistema de flags para prevenir re-renderizados innecesarios
+-   ✅ **Actualiza solo lo necesario**: Compara atributos, texto y estructura del DOM
+-   ✅ **Mantiene event listeners**: No reemplaza nodos innecesariamente
+-   ✅ **Detecta cambios estructurales**: Reemplaza nodos cuando cambia el tipo de elemento
+-   ✅ **Maneja hijos dinámicos**: Agrega, elimina y actualiza elementos hijo eficientemente
+-   ✅ **Evita bucles infinitos**: Sistema de flags para prevenir re-renderizados innecesarios
 
 ### Uso básico
 
@@ -42,17 +42,17 @@ virtualDOM.commit()
 
 ### Ejemplos incluidos
 
-- **TabGallery**: Galería de imágenes con estado reactivo
-- **MeetTeam**: Tarjetas de equipo con stores y datos dinámicos
-- **NavBar**: Sistema de navegación con router
+-   **TabGallery**: Galería de imágenes con estado reactivo
+-   **MeetTeam**: Tarjetas de equipo con stores y datos dinámicos
+-   **NavBar**: Sistema de navegación con router
 
 ## Performance
 
-dist/rathole.js  3.92 kB │ gzip:  1.70 kB
+dist/rathole.js 3.92 kB │ gzip: 1.70 kB
 
 ## Demo
 
-- <https://rathole.vercel.app/>
+-   <https://rathole.vercel.app/>
 
 ## Install
 
@@ -89,4 +89,4 @@ rathole/
 
 ## Referencias
 
-- <https://picocss.com/>
+-   <https://picocss.com/>
