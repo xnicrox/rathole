@@ -9,6 +9,7 @@ import componentSize from './modules/componentSize'
 import onPageLoad from './modules/onPageLoad'
 import stores from './modules/stores'
 import virtualDOM from './modules/virtualDOM'
+import logger from './modules/logger'
 
 /**Rathold modules */
 export {
@@ -23,4 +24,5 @@ export {
     onPageLoad,
     stores,
     virtualDOM,
+    logger,
 }
