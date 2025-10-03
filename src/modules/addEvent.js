@@ -14,22 +14,26 @@ const elementsWithEvents = new Set()
  * @param {Function} callback - Función callback del evento
  * @returns {boolean} - true si se asignó el evento, false si ya existía
  */
-const addEvent = (elementId, eventType, callback) => {
+const addEvent = (elementId, eventType, callback, consoleLog = false) => {
     // Crear clave única para el elemento y tipo de evento
     const eventKey = `${elementId}-${eventType}`
 
     // Verificar si el evento ya fue asignado
     if (elementsWithEvents.has(eventKey)) {
-        console.warn(
-            `Evento '${eventType}' ya asignado al elemento '${elementId}'`
-        )
+        if (consoleLog) {
+            console.warn(
+                `Evento '${eventType}' ya asignado al elemento '${elementId}'`
+            )
+        }
         return false
     }
 
     // Buscar el elemento en el DOM
     const element = document.getElementById(elementId)
     if (!element) {
-        console.error(`Elemento con id '${elementId}' no encontrado`)
+        if (consoleLog) {
+            console.error(`Elemento con id '${elementId}' no encontrado`)
+        }
         return false
     }
 
@@ -39,7 +43,11 @@ const addEvent = (elementId, eventType, callback) => {
     // Marcar como procesado para evitar duplicados
     elementsWithEvents.add(eventKey)
 
-    console.debug(`Evento '${eventType}' asignado a elemento '${elementId}'`)
+    if (consoleLog) {
+        console.debug(
+            `Evento '${eventType}' asignado a elemento '${elementId}'`
+        )
+    }
     return true
 }
 

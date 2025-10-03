@@ -5,32 +5,24 @@
 
 // Importar módulos necesarios de Rathole
 import {
-    virtualDOM, // Sistema de DOM virtual para renderizado eficiente
-    addEvent, // Gestor de eventos del DOM
-    state, // Sistema de estado reactivo
-    componentSize, // Utilidad para medir el tamaño de componentes
-    logger, // Sistema de logging optimizado
+    virtualDOM,
+    addEvent,
+    state,
+    componentSize,
+    logger,
 } from '../../rathole'
-import './format.css' // Estilos CSS para el componente
+import './format.css'
 
-/**
- * Función principal del componente TabGallery
- * @param {string} appSelector - Selector CSS del elemento contenedor
- */
 export default function TabGallery(appSelector) {
-    // Obtener el elemento contenedor del DOM
     const app = document.querySelector(appSelector)
     if (!app) return logger.error(`Elemento no encontrado: ${appSelector}`)
 
-    // Configuración de imágenes
     const defaultImg = 'https://www.w3schools.com/howto/img_nature.jpg'
     const images = [
         { id: 'Nature', src: 'img_nature.jpg' },
         { id: 'Snow', src: 'img_snow.jpg' },
         { id: 'Mountains', src: 'img_mountains.jpg' },
     ]
-
-    // El control de eventos ahora se maneja centralmente en addEvent.js
 
     /**
      * Template HTML para la fila de imágenes en miniatura
@@ -43,13 +35,6 @@ export default function TabGallery(appSelector) {
         )
         .join('')}</div>`
 
-    /**
-     * Template HTML para el contenedor de imagen expandida
-     * @param {Object} params - Parámetros del componente
-     * @param {string} params.img - URL de la imagen a mostrar
-     * @param {boolean} params.close - Si la imagen está cerrada (oculta)
-     * @returns {string} HTML del contenedor de imagen expandida
-     */
     const PhotoContainer = ({ img, close }) =>
         `<div class="photo_container">
             <span id="close" class="closebtn" style="display:${
@@ -64,8 +49,6 @@ export default function TabGallery(appSelector) {
     /**
      * Template HTML principal del componente
      * Combina la fila de imágenes y el contenedor de imagen expandida
-     * @param {Object} e - Estado actual del componente
-     * @returns {string} HTML completo del componente
      */
     const container = (e) =>
         `<div class="gallery_container">${Row}${PhotoContainer(e)}</div>`
@@ -88,28 +71,30 @@ export default function TabGallery(appSelector) {
                 `<div class="tab-gallery-wrapper">${compo.join('')}</div>`,
                 app
             )
-            // Aplicar los cambios al DOM real
             virtualDOM.commit()
 
             // Asignar eventos a las imágenes de la galería
-            // addEvent ahora maneja automáticamente la prevención de duplicados
+
             images.forEach((i) => {
-                // Evento click en imagen: expande la imagen seleccionada
-                addEvent(i.id, 'click', (e) => {
-                    logger.debug(
-                        `Click en imagen ${i.id}:`,
-                        e.srcElement.currentSrc
-                    )
-                    // Actualizar estado: mostrar imagen expandida y ocultar botón close
-                    state.setState({
-                        img: e.srcElement.currentSrc,
-                        close: false,
-                    })
-                })
+                addEvent(
+                    i.id,
+                    'click',
+                    (e) => {
+                        logger.debug(
+                            `Click en imagen ${i.id}:`,
+                            e.srcElement.currentSrc
+                        )
+
+                        state.setState({
+                            img: e.srcElement.currentSrc,
+                            close: false,
+                        })
+                    },
+                    true
+                )
             })
 
             // Asignar evento al botón de cerrar
-            // addEvent maneja automáticamente la prevención de duplicados
             addEvent('close', 'click', () => {
                 logger.debug('Click en botón close')
                 // Actualizar estado: ocultar imagen expandida
