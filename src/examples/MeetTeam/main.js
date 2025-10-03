@@ -77,7 +77,7 @@ export default function MeetTeam(appSelector) {
     // Modificar los componentes para que tengan una estructura consistente
     const LoadData = `
     <div class="meet-team-content">
-        <div class="pre_colum_meet">Company cards</div>
+        <div class="pre_colum_meet"></div>
         <button id="load-card" class="button_meet">Load employees</button>
     </div>`
 

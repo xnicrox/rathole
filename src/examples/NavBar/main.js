@@ -1,4 +1,4 @@
-import { virtualDOM, state, router, addEvent } from '../../rathole'
+import { virtualDOM, state, router, addEvent, logger } from '../../rathole'
 import './format.css'
 
 export default function NavBar(appSelector) {
@@ -6,45 +6,48 @@ export default function NavBar(appSelector) {
     const app = document.querySelector(appSelector)
 
     if (!app) {
-        console.error(
+        logger.error(
             `No se encontró el elemento con el selector: ${appSelector}`
         )
         return
     }
 
-    /**Recuperamo página sino dejamos la que está por defecto */
-    const defaultPage =
-        window.location.hash.slice(1) !== ''
-            ? window.location.hash.slice(1)
-            : 'home'
+    /**Recuperar página o usar la que está por defecto */
+    const defaultPage = window.location.hash.slice(1) || 'home'
 
     /**Estado de la app */
     state.subscribe((data) => {
-        console.log('onChange navBar:', data)
+        logger.info('Estado NavBar actualizado:', data)
         const currentRoute = window.location.hash.slice(1) || defaultPage
         const content = router.getRoute(currentRoute) || router.getRoute('home')
         renderDOM(content)
     })
 
-    /**Componets */
+    /**Componentes */
 
     const BarNav = () => {
         const element = state.data
+        const navigationItems = [
+            { id: 'home', href: '#home', label: 'Home' },
+            { id: 'about', href: '#about', label: 'About Us' },
+            { id: 'contact', href: '#contact', label: 'Contact' },
+        ]
+
         return `
  <nav id="bar" class="navbar">
     <ul>
         <li><strong>${element.link}</strong></li>
     </ul>
     <ul>
-        <li><a id="home" href="#home" role="button" class="${
-            element.link !== 'home' ? 'outline' : ''
-        }">Home</a></li>
-        <li><a id="about" href="#about" role="button" class="${
-            element.link !== 'about' ? 'outline' : ''
-        }">About Us</a></li>
-        <li><a id="contact"" href="#contact" role="button" class="${
-            element.link !== 'contact' ? 'outline' : ''
-        }">Contact</a></li>
+        ${navigationItems
+            .map(
+                (item) => `
+        <li><a id="${item.id}" href="${item.href}" role="button" class="${
+            element.link !== item.id ? 'outline' : ''
+        }">${item.label}</a></li>
+        `
+            )
+            .join('')}
     </ul>
 </nav>
     `
@@ -61,7 +64,7 @@ export default function NavBar(appSelector) {
 
     /**Cambios en la barra*/
     function changeBar(e) {
-        console.log('option:', e.srcElement.id)
+        logger.debug('Navegación seleccionada:', e.srcElement.id)
         state.setState({ link: e.srcElement.id })
     }
 
@@ -69,7 +72,7 @@ export default function NavBar(appSelector) {
     function renderDOM(content) {
         // Validar que el contenedor es un elemento DOM válido
         if (!(app instanceof Element)) {
-            console.error('El contenedor no es un elemento DOM válido:', app)
+            logger.error('El contenedor no es un elemento DOM válido:', app)
             return
         }
 
@@ -85,20 +88,17 @@ export default function NavBar(appSelector) {
         try {
             // Actualizar el DOM virtual y aplicar cambios
             virtualDOM.setVirtualTree(htmlString, app)
-            virtualDOM.commit()
+            virtualDOM
+                .commit()
 
-            // Agregar los event listeners
-            if (document.getElementById('home')) {
-                addEvent('home', 'click', changeBar)
-            }
-            if (document.getElementById('about')) {
-                addEvent('about', 'click', changeBar)
-            }
-            if (document.getElementById('contact')) {
-                addEvent('contact', 'click', changeBar)
-            }
+                [
+                    // Agregar los event listeners (el sistema centralizado previene duplicados)
+                    ('home', 'about', 'contact')
+                ].forEach((item) => {
+                    addEvent(item, 'click', changeBar)
+                })
         } catch (error) {
-            console.error('Error en renderDOM:', error)
+            logger.error('Error en renderDOM:', error)
         }
     }
 
