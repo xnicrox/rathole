@@ -63,7 +63,7 @@ export default function TabGallery(appSelector) {
         if (!(app instanceof Element)) return
 
         // Log del tamaño del componente para debugging
-        logger.debug(`Component size: ${componentSize(compo)}`)
+        logger.debug(`Component size: ${JSON.stringify(componentSize(compo))}`)
 
         try {
             // Actualizar el DOM virtual con el nuevo HTML
