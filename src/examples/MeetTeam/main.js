@@ -1,4 +1,4 @@
-import { virtualDOM, data, addEvent, stores } from '../../rathole'
+import { virtualDOM, data, addEvent, stores, logger } from '../../rathole'
 import './format.css'
 
 export default function MeetTeam(appSelector) {
@@ -6,7 +6,7 @@ export default function MeetTeam(appSelector) {
     const app = document.querySelector(appSelector)
 
     if (!app) {
-        console.error(
+        logger.error(
             `No se encontró el elemento con el selector: ${appSelector}`
         )
         return
@@ -15,15 +15,15 @@ export default function MeetTeam(appSelector) {
     /**Stores */
     const socialState = stores.createStore('socialStore')
     stores.subscribe('socialStore', (storeData) => {
-        console.log('onChange socialStore:', storeData)
+        logger.info('Estado socialStore actualizado:', storeData)
         // Actualizar la vista cuando cambie el estado (sin inicializar el store de nuevo)
         if (dataList) {
             renderDOM([PageLayout(dataList), ButtonClose], app, dataList, false)
         }
     })
 
-    //Url base de llamada de datos
-    data.baseUrl = ''
+    // Configurar URL base para las llamadas de datos
+    data.setBaseUrl('')
     //Listado de datos
     let dataList
 
@@ -104,7 +104,7 @@ export default function MeetTeam(appSelector) {
                 // Si tenemos datos, agregar eventos para las cards
                 if (document.getElementById('close-card')) {
                     addEvent('close-card', 'click', () => {
-                        console.log('Cerrando cards...')
+                        logger.info('Cerrando cards...')
                         reset()
                     })
                 }
@@ -135,14 +135,14 @@ export default function MeetTeam(appSelector) {
                 }
             }
         } catch (error) {
-            console.error('Error en renderDOM:', error)
+            logger.error('Error en renderDOM:', error)
         }
     }
 
     /**Mostrar contacto */
     function getSocial(e) {
         e.preventDefault()
-        console.log('boton:', e.target.id)
+        logger.debug('Click en botón:', e.target.id)
         const id = `viewIcons_${e.target.id}`
         const getStore = stores.getStore('socialStore')
         const name = {}
@@ -153,26 +153,35 @@ export default function MeetTeam(appSelector) {
     /**Llamada a los datos */
     async function fetchData(e) {
         e.preventDefault()
-        console.log('LoadData...')
+        logger.info('Iniciando carga de datos del equipo...')
+
         try {
+            // Usar la función genérica de data.js
             dataList = await data.get('team.json')
-            if (dataList) {
-                // Pasar dataList y true para inicializar el store
+
+            if (dataList && Array.isArray(dataList)) {
+                logger.info(
+                    `Datos del equipo cargados exitosamente: ${dataList.length} miembros`
+                )
+                // Renderizar la UI con los datos obtenidos
                 renderDOM(
                     [PageLayout(dataList), ButtonClose],
                     app,
                     dataList,
                     true
                 )
+            } else {
+                throw new Error('Formato de datos del equipo inválido')
             }
         } catch (error) {
-            console.error('Error cargando datos:', error)
+            // El error ya fue loggeado en data.js, aquí manejamos la UI
+            logger.error('No se pudieron cargar los datos del equipo')
         }
     }
 
     /*Renderizamos elementos base */
     function reset() {
-        console.log('Reseteando estado...')
+        logger.info('Reseteando estado...')
         // Limpiar el estado
         dataList = null
         stores.updateStore('socialStore', {})
